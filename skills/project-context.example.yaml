@@ -1,0 +1,95 @@
+# =============================================================================
+# project-context.example.yaml
+# -----------------------------------------------------------------------------
+# Copy this to a project's  .agents/project-context.yaml  and fill in the values.
+# Generic skills READ from this file at runtime instead of hardcoding domain
+# specifics. If this file (or a key) is missing, skills use their documented
+# generic defaults. Validate against project-context.schema.json.
+# =============================================================================
+
+project:
+  name: "<Project Name>"
+  code: "<project-slug>"
+  description: "<one-line description of the product>"
+
+# One-line domain statement — sets the frame for every skill.
+domain: "<e.g. UK social housing | KYC/AML onboarding | clinical research>"
+
+# Applicable jurisdictions/regions, most relevant first.
+jurisdictions: ["<e.g. England>", "<Scotland>"]
+
+# Source-authority tiers, ORDERED highest -> lowest.
+# Skills use this for grounding, ranking, and confidence scoring.
+authority_hierarchy:
+  - "<highest authority, e.g. statute>"
+  - "<...>"
+  - "<lowest, e.g. best_practice>"
+
+# Source registry grouped by access tier (keys are free-form).
+sources:
+  primary:
+    - name: "<authoritative source>"
+      url: "<https://...>"
+      authority: "<maps to an authority_hierarchy tier>"
+      access: public
+  licensed:
+    - name: "<paid/licensed source>"
+      access: licensed
+
+# Domain terminology the agent should use and expand.
+glossary:
+  ref: "<path/anchor to a glossary doc>"
+  terms:
+    "<TERM>": "<definition>"
+
+# Non-negotiable rules every skill must honour.
+compliance_rules:
+  - id: cite_claims
+    rule: "Every domain/regulatory claim must carry a source and authority level."
+    severity: blocking
+  - id: no_pii
+    rule: "Never process personal data; detect and stop."
+    severity: blocking
+
+guardrails:
+  pii_handling: detect_and_stop
+  prohibited_data: ["<e.g. resident personal data>"]
+
+escalation_policy:
+  triggers: ["high-stakes decision", "legal ambiguity"]
+  action: "flag and recommend human/expert review"
+  disclaimer: "This is decision support, not professional advice."
+
+# Authority level -> user-facing confidence label.
+confidence_tiers:
+  high: "grounded in top-tier in-force authority"
+  medium: "grounded in guidance / secondary authority"
+  low: "general knowledge or uncertain sourcing"
+
+tenancy:
+  model: "<multi-tenant-isolated | single-tenant>"
+
+tech_bindings:
+  graph_store: "<e.g. Neo4j>"
+  vector_index: "<e.g. Neo4j native vector>"
+  llm: "<e.g. Claude on Amazon Bedrock>"
+  embedding_model: "<...>"
+  cache: "<e.g. Redis>"
+  orchestrator: "<e.g. Google ADK 2.0>"
+  hosting: "<e.g. AWS UK region>"
+
+# Which generic skills this project adopts, with optional overlay/overrides.
+skills:
+  - name: fact-checker
+    enabled: true
+    priority: FF
+  - name: grounded-answer-with-citations
+    enabled: true
+    layer: "Agentic + Experience"
+    priority: V1
+
+meta:
+  version: "0.1.0"
+  last_updated: "<YYYY-MM-DD>"
+  owner: "<team/owner>"
+  schema_version: "1.0"

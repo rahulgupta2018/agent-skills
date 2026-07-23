@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-skills/project-context.schema.json",
+  "title": "Project Context",
+  "description": "Per-project context contract that generic Agent Skills bind to at runtime. Lives at a project's .agents/project-context.yaml. Skills read values from here instead of hardcoding domain specifics; when a key is absent, skills fall back to their documented generic defaults.",
+  "type": "object",
+  "required": ["project", "domain"],
+  "additionalProperties": false,
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Project name (e.g. 'Social Housing Knowledge AI')." },
+        "code": { "type": "string", "description": "Short code/slug (e.g. 'social-housing-ai')." },
+        "description": { "type": "string" }
+      }
+    },
+    "domain": {
+      "type": "string",
+      "description": "One-line domain statement (e.g. 'UK social housing', 'KYC/AML onboarding')."
+    },
+    "jurisdictions": {
+      "type": "array",
+      "description": "Applicable jurisdictions/regions, most-relevant first.",
+      "items": { "type": "string" }
+    },
+    "authority_hierarchy": {
+      "type": "array",
+      "description": "Source-authority tiers, ORDERED highest to lowest. Used for grounding, ranking, and confidence scoring.",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "sources": {
+      "type": "object",
+      "description": "Source registry grouped by tier. Each entry may be a string or an object.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "required": ["name"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "url": { "type": "string" },
+                "authority": { "type": "string", "description": "Which authority_hierarchy tier this source maps to." },
+                "access": { "type": "string", "enum": ["public", "licensed", "internal"] },
+                "notes": { "type": "string" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "glossary": {
+      "type": "object",
+      "description": "Domain terminology the agent should use/expand.",
+      "additionalProperties": false,
+      "properties": {
+        "ref": { "type": "string", "description": "Path/anchor to a glossary doc (e.g. docs/architecture.md#10-abbreviations)." },
+        "terms": {
+          "type": "object",
+          "description": "Optional inline term -> definition map.",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "compliance_rules": {
+      "type": "array",
+      "description": "Non-negotiable rules skills must honour (grounding, PII, escalation, audit).",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["id", "rule"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "rule": { "type": "string" },
+              "severity": { "type": "string", "enum": ["blocking", "high", "medium", "low"] }
+            }
+          }
+        ]
+      }
+    },
+    "guardrails": {
+      "type": "object",
+      "description": "Safety/data-handling switches skills consult.",
+      "additionalProperties": true,
+      "properties": {
+        "pii_handling": { "type": "string", "description": "e.g. 'detect_and_stop', 'strip', 'allow'." },
+        "prohibited_data": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "escalation_policy": {
+      "type": "object",
+      "description": "When and how to escalate / defer to humans.",
+      "additionalProperties": false,
+      "properties": {
+        "triggers": { "type": "array", "items": { "type": "string" } },
+        "action": { "type": "string" },
+        "disclaimer": { "type": "string", "description": "Standard 'support not advice' style note to append." }
+      }
+    },
+    "confidence_tiers": {
+      "type": "object",
+      "description": "Mapping from authority level to a user-facing confidence label.",
+      "additionalProperties": { "type": "string" }
+    },
+    "tenancy": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "model": { "type": "string", "description": "e.g. 'multi-tenant-isolated', 'single-tenant'." },
+        "isolation": { "type": "string" }
+      }
+    },
+    "tech_bindings": {
+      "type": "object",
+      "description": "Concrete infrastructure a skill may target. Values are project-specific.",
+      "additionalProperties": true,
+      "properties": {
+        "graph_store": { "type": "string" },
+        "vector_index": { "type": "string" },
+        "llm": { "type": "string" },
+        "embedding_model": { "type": "string" },
+        "cache": { "type": "string" },
+        "orchestrator": { "type": "string" },
+        "hosting": { "type": "string" }
+      }
+    },
+    "skills": {
+      "type": "array",
+      "description": "Manifest of generic skills this project has adopted, with optional per-skill overrides.",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "Skill folder name from the generic library." },
+          "enabled": { "type": "boolean", "default": true },
+          "layer": { "type": "string", "description": "Project-overlay: architecture layer this skill maps to." },
+          "priority": { "type": "string", "enum": ["V1", "FF", "Later"] },
+          "overrides": { "type": "object", "additionalProperties": true, "description": "Key/value overrides that replace context defaults for this skill only." }
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string" },
+        "last_updated": { "type": "string" },
+        "owner": { "type": "string" },
+        "schema_version": { "type": "string" }
+      }
+    }
+  }
+}
