@@ -48,7 +48,7 @@ agent-skills/
 |---|---|
 | knowledge | `grounded-answer-with-citations`, `ontology-guided-retrieval`, `policy-gap-analysis`, `ontology-builder-assistant` |
 | agent | `memory-systems`, `multi-agent-patterns`, `self-improving-agent-skills`, `context-fundamentals`, `context-degradation`, `context-compression`, `context-optimization`, `filesystem-context`, `tool-design` |
-| coding | `python-expert`, `fullstack-developer`, `tdd-red-green-refactor`, `typed-service-contracts` |
+| coding | `python-expert`, `fullstack-developer`, `tdd-red-green-refactor`, `typed-service-contracts`, `openapi-design` |
 | planning | `project-planner`, `sprint-planner`, `strategy-advisor` |
 | writing | `technical-writer` |
 | design | `ux-designer` |
